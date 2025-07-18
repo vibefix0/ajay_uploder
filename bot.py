@@ -1,8 +1,10 @@
 import os
+import re
 import subprocess
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, ContextTypes, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
+# 🔐 Get secrets
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 ADMIN_ID = int(os.getenv("ADMIN_ID"))
 
@@ -10,7 +12,7 @@ ADMIN_ID = int(os.getenv("ADMIN_ID"))
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("👋 Hello Ajay Babe! Send me a .txt file containing .m3u8 links 💖")
 
-# ✅ Handle .txt file uploads
+# ✅ .txt file handler with regex-based link extraction
 async def handle_txt_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.from_user.id != ADMIN_ID:
         await update.message.reply_text("🚫 You're not authorized to use this bot.")
@@ -25,8 +27,10 @@ async def handle_txt_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     file_path = f"{document.file_name}"
     await file.download_to_drive(file_path)
 
-    with open(file_path, 'r') as f:
-        links = [line.strip() for line in f if line.strip().startswith("http")]
+    # 🔍 Extract links using regex (http/https anywhere in text)
+    with open(file_path, 'r', encoding='utf-8') as f:
+        content = f.read()
+        links = re.findall(r'https?://[^\s]+', content)
 
     await update.message.reply_text(f"✅ Found {len(links)} video links. Starting download & upload...")
 
@@ -46,7 +50,7 @@ async def handle_txt_file(update: Update, context: ContextTypes.DEFAULT_TYPE):
     os.remove(file_path)
     await update.message.reply_text("🎉 All done! Hacker Babe mode complete 😘")
 
-# ✅ Main function
+# ✅ Main Bot App
 if __name__ == "__main__":
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
