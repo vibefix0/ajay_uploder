@@ -2,7 +2,7 @@ import os
 import subprocess
 from telegram import Update, Document
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
-from telegram.constants import DocumentMimeType  # ✅ Required for detecting .txt files
+from telegram.ext import Document  # ✅ Required for detecting .txt files
 
 # 🔐 Load environment variables
 BOT_TOKEN = os.getenv("BOT_TOKEN")
